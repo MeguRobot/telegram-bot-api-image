@@ -1,0 +1,44 @@
+services:
+  telegram-bot-api:
+    container_name: telegram-bot-api
+    image: megurobot/telegram-bot-api:latest
+    restart: unless-stopped
+    environment:
+      TELEGRAM_API_ID: "123456"
+      TELEGRAM_API_HASH: "abcdefghijklmnopqrstuvwyz123456789"
+      TELEGRAM_STAT: "true"
+      TELEGRAM_LOCAL: "true"
+
+      # Rootful Docker only: run the server as this uid/gid (default 101:101).
+      # Podman rootless: leave both UNSET so files stay owned by your user.
+      # USER_UID: "1000"
+      # USER_GID: "1000"
+
+    # Podman rootless, optional: also run the server as a non-root user inside
+    # the container (same uid/gid as your host user). Files stay owned by you.
+    # userns_mode: keep-id
+
+    volumes:
+      # Option 1: named volume (works everywhere, nothing to prepare).
+      - telegram-bot-api:/var/lib/telegram-bot-api
+
+      # Option 2: bind mount. Create the folder first (mkdir -p ./data) so it is
+      # owned by your user. On SELinux hosts (Fedora, RHEL...) keep the label:
+      # :Z = private to this container, :z = shared with other containers.
+      # - ./data:/var/lib/telegram-bot-api:Z
+    networks:
+      - telegram-bot-api
+    expose:
+      - "8081"
+      - "8082"
+    # Publish to the host only if the bot does not run in the same network:
+    # ports:
+    #   - "127.0.0.1:8081:8081"
+
+volumes:
+  telegram-bot-api:
+    name: telegram-bot-api
+
+networks:
+  telegram-bot-api:
+    name: telegram-bot-api
