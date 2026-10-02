@@ -8,7 +8,8 @@ on:
     paths:
       - Containerfile
       - entrypoint.sh
-      - telegram-bot-api    
+      - telegram-bot-api
+      - .gitmodules
       - .github/workflows/image.yml
 
 concurrency:
@@ -32,12 +33,25 @@ jobs:
         with:
           submodules: recursive
 
+      - name: Ensure submodule is present
+        run: |
+          if [ ! -f telegram-bot-api/CMakeLists.txt ]; then
+            echo "Submodule missing, trying to init it..."
+            git submodule update --init --recursive
+          fi
+          if [ ! -f telegram-bot-api/CMakeLists.txt ]; then
+            echo "telegram-bot-api/CMakeLists.txt not found." >&2
+            echo "Check that .gitmodules exists and the submodule is committed." >&2
+            exit 1
+          fi
+
       - name: Get upstream version
         id: version
         run: |
           VERSION=$(sed -nE 's/^project\(TelegramBotApi[[:space:]]+VERSION[[:space:]]+([0-9.]+).*/\1/p' telegram-bot-api/CMakeLists.txt | head -n1)
           if [ -z "${VERSION}" ]; then
             echo "Could not parse the version from telegram-bot-api/CMakeLists.txt" >&2
+            grep -in 'project(' telegram-bot-api/CMakeLists.txt >&2 || true
             exit 1
           fi
           echo "value=${VERSION}" >> "$GITHUB_OUTPUT"
@@ -48,13 +62,16 @@ jobs:
         uses: docker/metadata-action@v6
         with:
           images: |
-            docker.io/megurobot/telegram-bot-api
-            ghcr.io/megurobot/telegram-bot-api
+            docker.io/${{ env.IMAGE }}
+            ghcr.io/${{ env.IMAGE }}
           tags: |
             type=raw,value=latest
             type=raw,value=${{ steps.version.outputs.value }}
           labels: |
             org.opencontainers.image.version=${{ steps.version.outputs.value }}
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v4
 
       - name: Login to GHCR
         uses: docker/login-action@v4
@@ -62,9 +79,6 @@ jobs:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v4
 
       - name: Login to Docker Hub
         uses: docker/login-action@v4
