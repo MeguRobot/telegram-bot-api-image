@@ -1,10 +1,10 @@
 # telegram-bot-api-image
-[![Image build](https://github.com/MeguRobot/telegram-bot-api-image/actions/workflows/image.yml/badge.svg)](https://github.com/MeguRobot/telegram-bot-api-docker/actions/workflows/image.yml)
+[![Image build](https://github.com/MeguRobot/telegram-bot-api-image/actions/workflows/image.yml/badge.svg)](https://github.com/MeguRobot/telegram-bot-api-image/actions/workflows/image.yml)
 [![Docker Hub](https://img.shields.io/docker/v/megurobot/telegram-bot-api?sort=semver&logo=docker&label=docker%20hub)](https://hub.docker.com/r/megurobot/telegram-bot-api)
 [![Docker pulls](https://img.shields.io/docker/pulls/megurobot/telegram-bot-api?logo=docker)](https://hub.docker.com/r/megurobot/telegram-bot-api)
 [![Image size](https://img.shields.io/docker/image-size/megurobot/telegram-bot-api/latest?logo=docker)](https://hub.docker.com/r/megurobot/telegram-bot-api/tags)
 [![GHCR](https://img.shields.io/badge/ghcr.io-megurobot%2Ftelegram--bot--api-2088ff?logo=github)](https://github.com/MeguRobot/telegram-bot-api-image/pkgs/container/telegram-bot-api)
-[![Last commit](https://img.shields.io/github/last-commit/MeguRobot/telegram-bot-api-image?logo=github)](https://github.com/MeguRobot/telegram-bot-api-docker/commits/main)
+[![Last commit](https://img.shields.io/github/last-commit/MeguRobot/telegram-bot-api-image?logo=github)](https://github.com/MeguRobot/telegram-bot-api-image/commits/main)
 
 This repository provides a Docker/Podman image for running a Telegram Bot API server on the latest Alpine Linux.
 

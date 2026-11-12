@@ -1,0 +1,52 @@
+name: Auto-merge submodule update
+
+# Merges the Dependabot PR that bumps the telegram-bot-api submodule once the
+# `build` check from image-pr.yml passes, then triggers the image publish.
+#
+# A merge made with GITHUB_TOKEN does not fire the `push` trigger of
+# image.yml, so the publish is started explicitly with workflow_dispatch.
+
+on:
+  pull_request:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+permissions:
+  contents: write
+  pull-requests: write
+  actions: write
+
+jobs:
+  merge:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    if: >-
+      github.actor == 'dependabot[bot]' &&
+      startsWith(github.head_ref, 'dependabot/gitsubmodule/')
+    env:
+      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      GH_REPO: ${{ github.repository }}
+      PR_URL: ${{ github.event.pull_request.html_url }}
+    steps:
+      - name: Wait for the build check
+        run: |
+          for i in $(seq 1 55); do
+            state=$(gh pr checks "$PR_URL" --json name,bucket \
+              --jq '[.[] | select(.name == "build")][0].bucket // "missing"')
+            echo "build check: ${state}"
+            case "$state" in
+              pass) exit 0 ;;
+              fail|cancel) echo "Build check did not pass." >&2; exit 1 ;;
+            esac
+            sleep 60
+          done
+          echo "Timed out waiting for the build check." >&2
+          exit 1
+
+      - name: Merge the PR
+        run: gh pr merge "$PR_URL" --squash
+
+      - name: Publish the image
+        run: gh workflow run image.yml --ref main
